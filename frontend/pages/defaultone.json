@@ -1,0 +1,1 @@
+{"NAME":"defaultone","URL":"/f/:blockname","TEMPLATE":"\u003cdiv\u003e\u003cac-form-container :block\u003d\u0027$route.params.blockname\u0027\u003e\u003c/ac-form-container\u003e\u003c/div\u003e","CATEGORY_ID":"25372","IS_CACHE":"true","APPLICATION_ID":"4954"}

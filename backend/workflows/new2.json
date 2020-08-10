@@ -1,0 +1,3555 @@
+{
+  "workflows": [
+    
+    {
+      "id": 174065,
+      "name": "PutContent",
+      "trigger": "rest",
+      "expression": "/_db/{table_name}",
+      "method": "PUT",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "checkApplicationOrnot"
+          }
+        },
+        {
+          "id": "checkApplicationOrnot",
+          "type": "if-condition",
+          "variable1": "{{request.path.table_name}}",
+          "comparator": "equal_to",
+          "variable2": "APPLICATION",
+          "if_type": "value",
+          "value_type": "hb",
+          "output_variable": "condition_output",
+          "next": {
+            "success": "PBXM3ym2QkW37",
+            "failure": "PBXmshh7DXxRT"
+          }
+        },
+        {
+          "url": "https://api.github.com/repos/{{app_out.GIT_ORGANIZATION}}/{{app_out.GIT_REPO_NAME}}/contents/{{path_folder}}/{{#if request.body.NAME}}{{request.body.NAME}}{{else}}{{request.body.CONFIG_NAME}}{{/if}}.json",
+          "method": "PUT",
+          "raw": "{\"message\":\"{{#if request.body.NAME}}{{request.body.NAME}}{{else}}{{request.body.CONFIG_NAME}}{{/if}}-{{commit_date}}\",\"content\":\"{{{encode64 formatJson}}}\",\"branch\":\"{{{app_out.GIT_BRANCH}}}\",\"sha\":\"{{{select_out.GIT_SHA}}}\"}",
+          "auth_type": "default",
+          "username": "",
+          "password": "",
+          "consumer_key": "",
+          "consumer_secret": "",
+          "token": "",
+          "secret": "",
+          "output_variable": "out",
+          "value_type": "hb",
+          "query_parameters": [],
+          "headers": [
+            {
+              "key": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "key": "Authorization",
+              "value": "token {{app_out.GIT_TOKEN}}"
+            }
+          ],
+          "body_parameters": [],
+          "type": "rest",
+          "id": "PBXt6OG3XhXF1",
+          "next": {
+            "success": "PBXM3ym2QkW37",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "out",
+          "http_response_code": "",
+          "response_content_type": "",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXCzrR9wSAVA",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select * from applet_app.APPLICATION where ID = (select APPLICATION_ID from applet_app.{{{request.path.table_name}}} where id = {{{request.body.ID}}});",
+          "value_type": "hb",
+          "output_variable": "app_out",
+          "type": "sql-one",
+          "id": "PBXmshh7DXxRT",
+          "next": {
+            "success": "PBXxhaRkRF0Cu",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "formatJson",
+          "value": "{{{jsonstr request.body}}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXxhaRkRF0Cu",
+          "next": {
+            "success": "PBXkTgleSTNfG",
+            "failure": "hangup"
+          }
+        },
+        {
+          "src": "var frontend = [\"PAGES\",\"APP_JS\",\"BLOCKS\",\"APP_CSS\",\"HANDLER\",\"CATEGORIES\",\"UI_APPLICATIOIN_PLUGIN_CONFIG\"];var frontend_name = [\"pages\",\"js\",\"blocks\",\"css\",\"handlers\",\"categories\",\"plugins\"];\r\nvar backend = [\"WORKFLOW\",\"TRIGGER\",\"APPLICATION_PLUGIN_CONFIG\",\"FILTERS\"];var backend_name = [\"workflows\",\"triggers\",\"plugins\",\"filters\"];\r\n\r\nvar i;\r\nfor(i=0;i<frontend.length;i++){\r\nif(frontend[i] == map.request.path.table_name){\r\nmap.path_folder = \"frontend/\"+frontend_name[i];\r\n}\r\n}\r\nfor(i=0;i<backend.length;i++){\r\nif(backend[i] == map.request.path.table_name){\r\nmap.path_folder = \"backend/\"+backend_name[i];\r\n}\r\n}\r\n;var date = new Date();map.commit_date= date.toISOString();",
+          "inline": "true",
+          "type": "code-js",
+          "id": "PBXkTgleSTNfG",
+          "next": {
+            "success": "PBXhPZKfXos0k",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select GIT_SHA from applet_app.{{{request.path.table_name}}} where id={{{request.body.ID}}}",
+          "value_type": "hb",
+          "output_variable": "select_out",
+          "type": "sql-one",
+          "id": "PBXhPZKfXos0k",
+          "next": {
+            "success": "git_sha_condition",
+            "failure": "hangup"
+          }
+        },
+        {
+          "id": "git_sha_condition",
+          "type": "if-condition",
+          "variable1": "{{select_out.GIT_SHA}}",
+          "comparator": "greater_than",
+          "variable2": "4",
+          "if_type": "strlen",
+          "value_type": "hb",
+          "output_variable": "condition_output",
+          "next": {
+            "success": "PBXt6OG3XhXF1",
+            "failure": "No_git_shaw"
+          }
+        },
+        {
+          "url": "https://api.github.com/repos/{{app_out.GIT_ORGANIZATION}}/{{app_out.GIT_REPO_NAME}}/contents/{{path_folder}}/{{#if request.body.NAME}}{{request.body.NAME}}{{else}}{{request.body.CONFIG_NAME}}{{/if}}.json",
+          "method": "PUT",
+          "raw": "{\"message\":\"{{#if request.body.NAME}}{{request.body.NAME}}{{else}}{{request.body.CONFIG_NAME}}{{/if}}-{{commit_date}}\",\"content\":\"{{{encode64 formatJson}}}\",\"branch\":\"{{{app_out.GIT_BRANCH}}}\"}",
+          "auth_type": "default",
+          "username": "",
+          "password": "",
+          "consumer_key": "",
+          "consumer_secret": "",
+          "token": "",
+          "secret": "",
+          "output_variable": "out",
+          "value_type": "hb",
+          "query_parameters": [],
+          "headers": [
+            {
+              "key": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "key": "Authorization",
+              "value": "token {{app_out.GIT_TOKEN}}"
+            }
+          ],
+          "body_parameters": [],
+          "type": "rest",
+          "id": "No_git_shaw",
+          "next": {
+            "success": "PBXM3ym2QkW37",
+            "failure": "hangup"
+          }
+        },
+        {
+          "exception_handle": "false",
+          "workflow_id": "3_ALL_UPDATE_SQL_TABLES",
+          "type": "execute-workflows",
+          "id": "PBXM3ym2QkW37",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 174066,
+      "name": "DeleteContent",
+      "trigger": "rest",
+      "expression": "/_db/{table_name}/{id}",
+      "method": "DELETE",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "2"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select GIT_SHA,NAME,APPLICATION_ID from applet_app.{{{request.path.table_name}}} where id={{{request.path.id}}}",
+          "value_type": "hb",
+          "output_variable": "select_out",
+          "type": "sql-one",
+          "id": "2",
+          "next": {
+            "success": "3",
+            "failure": "hangup"
+          }
+        },
+        {
+          "src": "var frontend = [\"PAGES\",\"APP_JS\",\"BLOCKS\",\"APP_CSS\",\"HANDLER\",\"CATEGORIES\",\"UI_APPLICATIOIN_PLUGIN_CONFIG\"];var frontend_name = [\"pages\",\"js\",\"blocks\",\"css\",\"handlers\",\"categories\",\"plugins\"];\r\nvar backend = [\"WORKFLOW\",\"TRIGGER\",\"APPLICATION_PLUGIN_CONFIG\",\"FILTERS\"];var backend_name = [\"workflows\",\"triggers\",\"plugins\",\"filters\"];\r\n\r\nvar i;\r\nfor(i=0;i<frontend.length;i++){\r\nif(frontend[i] == map.request.path.table_name){\r\nmap.path_folder = \"frontend/\"+frontend_name[i];\r\n}\r\n}\r\nfor(i=0;i<backend.length;i++){\r\nif(backend[i] == map.request.path.table_name){\r\nmap.path_folder = \"backend/\"+backend_name[i];\r\n}\r\n}\r\n",
+          "inline": "true",
+          "type": "code-js",
+          "id": "3",
+          "next": {
+            "success": "4",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select * from applet_app.APPLICATION where ID = {{select_out.APPLICATION_ID}}",
+          "value_type": "hb",
+          "output_variable": "app_out",
+          "type": "sql-one",
+          "id": "4",
+          "next": {
+            "success": "5",
+            "failure": "hangup"
+          }
+        },
+        {
+          "url": "https://api.github.com/repos/{{app_out.GIT_ORGANIZATION}}/{{app_out.GIT_REPO_NAME}}/contents/{{path_folder}}/{{#if select_out.NAME}}{{select_out.NAME}}{{else}}{{select_out.CONFIG_NAME}}{{/if}}.json",
+          "method": "DELETE",
+          "raw": "{\"message\":\"Delete\",\"branch\":\"{{{app_out.GIT_BRANCH}}}\",\"sha\":\"{{{select_out.GIT_SHA}}}\"}",
+          "auth_type": "default",
+          "username": "",
+          "password": "",
+          "consumer_key": "",
+          "consumer_secret": "",
+          "token": "",
+          "secret": "",
+          "output_variable": "out",
+          "value_type": "hb",
+          "query_parameters": [],
+          "headers": [
+            {
+              "key": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "key": "Authorization",
+              "value": "token {{app_out.GIT_TOKEN}}"
+            }
+          ],
+          "body_parameters": [],
+          "type": "rest",
+          "id": "5",
+          "next": {
+            "success": "6",
+            "failure": "hangup"
+          }
+        },
+        {
+          "exception_handle": "false",
+          "workflow_id": "4_ALL_DELETE_SQL_TABLES_ID",
+          "type": "execute-workflows",
+          "id": "6",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": "2_ALL_INSERT_SQL_TABLES",
+      "name": "ALL_INSERT_SQL_TABLES",
+      "trigger": "rest",
+      "expression": "/_db/nouse/{table_name}",
+      "method": "post",
+      "steps": [
+        {
+          "id": "1",
+          "type": "if-condition",
+          "variable1": "{{request.path.table_name}}",
+          "comparator": "equal_to",
+          "variable2": "APPLICATION",
+          "if_type": "value",
+          "value_type": "hb",
+          "output_variable": "condition_output",
+          "next": {
+            "success": "getOwnerIdFromCloud",
+            "failure": "getOwnerIdFromApplication"
+          }
+        },
+        {
+          "id": "getOwnerIdFromApplication",
+          "type": "sql-one",
+          "plugin_name": "app_db",
+          "value_type": "hb",
+          "value": "select OWNER_ID from applet_cloud.CLOUD where id=(select CLOUD_ID from APPLICATION where ID={{request.body.APPLICATION_ID}} )",
+          "output_variable": "owner",
+          "next": {
+            "success": "insert_app"
+          }
+        },
+        {
+          "id": "getOwnerIdFromCloud",
+          "type": "sql-one",
+          "plugin_name": "app_db",
+          "value_type": "hb",
+          "value": "select OWNER_ID from applet_cloud.CLOUD where ID={{request.body.CLOUD_ID}} ",
+          "output_variable": "owner",
+          "next": {
+            "success": "insert_app"
+          }
+        },
+        {
+          "id": "insert_app",
+          "type": "sql-insert",
+          "plugin_name": "app_db",
+          "value_type": "hb",
+          "value": "INSERT INTO `{{request.path.table_name}}` (OWNER_ID,{{#each request.body}}`{{@key}}`{{#if @last}}{{else}},{{/if}}{{/each}}) VALUES ('{{owner.OWNER_ID}}',{{#each request.body}}'{{{escapequote this}}}'{{#if @last}}{{else}},{{/if}}{{/each}});",
+          "output_variable": "insert_output",
+          "next": {
+            "success": "updataParentID",
+            "failure": "3"
+          }
+        },
+        {
+          "id": "updataParentID",
+          "type": "sql-update",
+          "plugin_name": "app_db",
+          "value_type": "hb",
+          "value": "UPDATE APPLICATION SET PARENT_ID={{insert_output.GENERATED_KEY}} where  ID={{insert_output.GENERATED_KEY}}",
+          "output_variable": "updatedStatus",
+          "next": {
+            "success": "updateFileSha"
+          }
+        },
+        {
+          "id": "updateFileSha",
+          "type": "sql-update",
+          "plugin_name": "app_db",
+          "value_type": "hb",
+          "value": "UPDATE applet_app.{{request.path.table_name}} set GIT_SHA='{{sha}}' where  ID={{insert_output.GENERATED_KEY}}",
+          "output_variable": "updatedStatus",
+          "next": {
+            "success": "2"
+          }
+        },
+        {
+          "id": "2",
+          "type": "send",
+          "variable_name": "insert_output"
+        },
+        {
+          "id": "3",
+          "type": "set-var-multi",
+          "json_is": true,
+          "json_name": "message",
+          "variables": [
+            {
+              "key": "status",
+              "value": "failure"
+            },
+            {
+              "key": "responseText",
+              "value": "Invalid Data, Please refer help text of each field and enter proper data"
+            }
+          ],
+          "next": {
+            "success": "sendfail"
+          }
+        },
+        {
+          "id": "sendfail",
+          "type": "send",
+          "value_type": "hb",
+          "http_response_code": 409,
+          "variable_name": "message"
+        }
+      ]
+    },
+    {
+      "id": "3_ALL_UPDATE_SQL_TABLES",
+      "name": "ALL_UPDATE_SQL_TABLES",
+      "trigger": "rest",
+      "expression": "/_db/nouse/{table_name}",
+      "method": "PUT",
+      "steps": [
+        {
+          "id": "1",
+          "type": "sql-update",
+          "plugin_name": "app_db",
+          "value_type": "hb",
+          "output_variable": "update_output",
+          "value": "UPDATE `{{request.path.table_name}}` SET {{#each request.body}}`{{@key}}`='{{{escapequote this}}}'{{#if @last}}{{else}},{{/if}}{{/each}}  where  ID = {{request.body.ID}};",
+          "next": {
+            "success": "2"
+          }
+        },
+        {
+          "id": "2",
+          "type": "send",
+          "variable_name": "update_output"
+        }
+      ]
+    },
+    {
+      "id": "4_ALL_DELETE_SQL_TABLES_ID",
+      "name": "ALL_DELETE_SQL_TABLES_ID",
+      "trigger": "rest",
+      "expression": "/_db/nouse/{table_name}/{id}",
+      "method": "delete",
+      "steps": [
+        {
+          "id": "1",
+          "type": "sql-delete",
+          "plugin_name": "app_db",
+          "value_type": "hb",
+          "output_variable": "delete_output",
+          "value": "DELETE FROM `{{request.path.table_name}}` WHERE ID = '{{request.path.id}}'",
+          "next": {
+            "success": "2"
+          }
+        },
+        {
+          "id": "2",
+          "type": "send",
+          "variable_name": "delete_output"
+        }
+      ]
+    },
+    {
+      "id": "5_ALL_SELECT_SQL_TABLES",
+      "name": "ALL_SELECT_SQL_TABLES",
+      "trigger": "rest",
+      "expression": "/_db/{table_name}",
+      "method": "GET",
+      "steps": [
+        {
+          "id": "1",
+          "type": "sql",
+          "plugin_name": "app_db",
+          "value_type": "ftl",
+          "value": "select <#if  request.params.fields??><#list request.params.fields?split(\",\") as i>`${request.path.table_name}`.${i}<#sep>,</#list><#else>`${request.path.table_name}`.*</#if> <#if request.params.target_table??>,`${request.params.target_table}`.${request.params.join_column} as  ${request.params.req_join_column_name}</#if> from `${request.path.table_name}` <#if request.params.target_table??> JOIN `${request.params.target_table}` ON `${request.path.table_name}`.${request.params.table_join_column} = `${request.params.target_table}`.${request.params.target_table_join_column} </#if>  <#if request.params.where??>where ${request.params.where} </#if> <#if request.params.group_by??> group by ${request.params.group_by} </#if><#if request.params.order_by??> order by ${request.params.order_by} </#if> <#if request.params.order_type??> ${request.params.order_type}</#if> <#if request.params.limit??>  limit ${request.params.limit}  </#if> <#if request.params.offset??> offset ${request.params.offset} </#if>",
+          "output_variable": "select_output",
+          "next": {
+            "success": "2"
+          }
+        },
+        {
+          "id": "2",
+          "type": "send",
+          "variable_name": "select_output"
+        }
+      ]
+    },
+    {
+      "id": "6_APP_DB_ALL_SELECT_SQL_TABLES_ID",
+      "name": "APP_DB_ALL_SELECT_SQL_TABLES_ID",
+      "trigger": "rest",
+      "expression": "/_db/{table_name}/{col_name}/{id}",
+      "method": "get",
+      "steps": [
+        {
+          "id": "1",
+          "type": "sql",
+          "plugin_name": "app_db",
+          "value_type": "ftl",
+          "value": "select ${request.params.fields!\"*\"} from `${request.path.table_name}`  where ${request.path.col_name} = '${request.path.id}' <#if request.params.where??> and ${request.params.where}   </#if> <#if request.params.group_by??> group by ${request.params.group_by} </#if><#if request.params.order_by??> order by ${request.params.order_by} </#if> <#if request.params.order_type??> ${request.params.order_type}</#if> <#if request.params.limit??>  limit ${request.params.limit}  </#if> <#if request.params.offset??> offset ${request.params.offset} </#if>",
+          "output_variable": "select_output",
+          "next": {
+            "success": "2"
+          }
+        },
+        {
+          "id": "2",
+          "type": "send",
+          "variable_name": "select_output"
+        }
+      ]
+    },
+    {
+      "id": "7_APP_DB_ALL_SELECT_SQL_TABLES_ID",
+      "name": "APP_DB_ALL_SELECT_SQL_TABLES_ID",
+      "trigger": "rest",
+      "expression": "/_db/{table_name}/{id}",
+      "method": "get",
+      "steps": [
+        {
+          "id": "1",
+          "type": "sql-one",
+          "plugin_name": "app_db",
+          "value_type": "ftl",
+          "value": "select ${request.params.fields!\"*\"} from `${request.path.table_name}`  where ID = '${request.path.id}' <#if request.params.where??> and ${request.params.where}   </#if> <#if request.params.group_by??> group by ${request.params.group_by} </#if><#if request.params.order_by??> order by ${request.params.order_by} </#if> <#if request.params.order_type??> ${request.params.order_type}</#if> <#if request.params.limit??>  limit ${request.params.limit}  </#if> <#if request.params.offset??> offset ${request.params.offset} </#if>",
+          "output_variable": "select_output",
+          "next": {
+            "success": "2"
+          }
+        },
+        {
+          "id": "2",
+          "type": "send",
+          "variable_name": "select_output"
+        }
+      ]
+    },
+    {
+      "id": "8_APP_DB_CONFLICT_CHECK",
+      "name": "conflict_check",
+      "trigger": "rest",
+      "expression": "/conflict_check/{table_name}/{id}/{field_type}/{value}",
+      "method": "PUT",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "checkvalue"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "SELECT COUNT(${request.path.table_name}.id) as conflict_check FROM ${request.path.table_name} where id=${request.path.id} and ${request.path.field_type} <#if request.path.value=='null'> is null <#else>='${request.path.value}' </#if>",
+          "value_type": "ftl",
+          "output_variable": "a",
+          "type": "sql",
+          "id": "checkvalue",
+          "next": {
+            "success": "PBXLTf0ohzbdS",
+            "failure": "PBXwbEvmQrDKg"
+          }
+        },
+        {
+          "name": "b",
+          "value": "conflicts",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXTrxN0A2Jkg",
+          "next": {
+            "success": "PBXQrVl7mBcnc",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "update",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXJNwZbzdlk1",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "b",
+          "http_response_code": "400",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXQrVl7mBcnc",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "output_variable": "b",
+          "if_type": "value",
+          "variable1": "{{c1}}",
+          "comparator": "equal_to",
+          "variable2": "0",
+          "value_type": "hb",
+          "type": "if-condition",
+          "id": "PBXbC4dsDk2aR",
+          "next": {
+            "success": "PBXTrxN0A2Jkg",
+            "failure": "PBXogcs0upitp"
+          }
+        },
+        {
+          "name": "a",
+          "value": "conflicts_check_fails",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXwbEvmQrDKg",
+          "next": {
+            "success": "PBXCm5kfuLuDQ",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "update",
+          "value": "UPDATE `{{request.path.table_name}}` SET {{#each request.body}}`{{@key}}`='{{{escapequote this}}}'{{#if @last}}{{else}},{{/if}}{{/each}}  where  ID = {{request.body.ID}};",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXKMJxbJu3Ta",
+          "next": {
+            "success": "PBXJNwZbzdlk1",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "a",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXCm5kfuLuDQ",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "c1",
+          "value": "{{a.0.conflict_check}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXLTf0ohzbdS",
+          "next": {
+            "success": "PBXbC4dsDk2aR",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "UPDATE `{{request.path.table_name}}` SET {{#each request.body}}`{{@key}}`='{{{escapequote this}}}'{{#if @last}}{{else}},{{/if}}{{/each}}  where  ID = {{request.body.ID}};",
+          "value_type": "hb",
+          "output_variable": "update",
+          "type": "sql-update",
+          "id": "PBXogcs0upitp",
+          "next": {
+            "success": "PBXN6GKCvfZni",
+            "failure": "PBXKMJxbJu3Ta"
+          }
+        },
+        {
+          "variable_name": "update",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXN6GKCvfZni",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29472,
+      "name": "bulk_insert",
+      "trigger": "rest",
+      "expression": "/bulk/{table_name}",
+      "method": "POST",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXrzloazNDps"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "INSERT INTO ${request.path.table_name}(${app.id_type},<#assign c = request.body.data?first><#list c?keys as k><#if k?counter == c?size>${k}<#else>${k},</#if></#list>) VALUES\r\n<#list request.body.data as k1>(${domain_id},<#list k1?values as v>\r\n  <#if k1?counter == request.body.data?size><#if v?counter == k1?size>'${v}')<#else>'${v}',</#if><#elseif v?counter == k1?size>'${v}'), <#else>'${v}',</#if>\r\n</#list></#list>",
+          "value_type": "ftl",
+          "output_variable": "insert",
+          "type": "sql-insert",
+          "id": "PBXAbG6eznNf4",
+          "next": {
+            "success": "PBX9PMcyNC3Gl",
+            "failure": "PBXtHBbZzRBTL"
+          }
+        },
+        {
+          "variable_name": "insert",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBX9PMcyNC3Gl",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "insert",
+          "value": "INSERT INTO ${request.path.table_name}(${app.id_type},<#assign c = request.body.data?first><#list c?keys as k><#if k?counter == c?size>${k}<#else>${k},</#if></#list>) VALUES <#list request.body.data as k1>(${domain_id},<#list k1?values as v>   <#if k1?counter == request.body.data?size><#if v?counter == k1?size>'${v}')<#else>'${v}',</#if><#elseif v?counter == k1?size>'${v}'), <#else>'${v}',</#if> </#list></#list>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXtHBbZzRBTL",
+          "next": {
+            "success": "PBXlQTTqRt0Ul",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "insert",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXlQTTqRt0Ul",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.user_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXrzloazNDps",
+          "next": {
+            "success": "PBXAbG6eznNf4",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29473,
+      "name": "bulk_update",
+      "trigger": "rest",
+      "expression": "/bulk/{table_name}",
+      "method": "PUT",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBX0JHUpAtrAJ"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select  concat('{',group_concat(concat('\"',column_name,'\":\"0\"')),'}')  json from information_schema.columns where table_name = '${request.path.table_name}'  and column_name in('tenant_id','domain_id','owner_id');",
+          "value_type": "ftl",
+          "output_variable": "output",
+          "type": "sql",
+          "id": "PBX0JHUpAtrAJ",
+          "next": {
+            "success": "PBXyqRioiSFds",
+            "failure": "PBXM3eFECGawD"
+          }
+        },
+        {
+          "variable_name": "output3",
+          "http_response_code": "200",
+          "response_content_type": "application/json; charset=utf8",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXMJSPNEs8Uq",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "output",
+          "http_response_code": "400",
+          "response_content_type": "application/json; charset=utf8",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXM3eFECGawD",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "<#assign id_type_check=output[0].json>\r\n<#assign ch=id_type_check?eval>\r\n\r\n<#compress>\r\nupdate ${request.path.table_name} set\r\n<#assign u=\"\" id=\"\" c=\"\" w=\"\" v1=\"#$vk$#=if(#$uk$#,'#$vv$#',#$vk$#)\" data=\"\">\r\n<#list request.body.data as i>\r\n<#assign c=\"\" data=\"\">\r\n<#list i as k,v> \r\n<#if k?lower_case=='id'><#assign c+= \" ${k}='${v}' and\" id=\"${k}\" w+='${v},'> <#else> <#assign data +=v1?replace('#$vv$#',v)?replace('#$vk$#',k)+','> </#if> \r\n</#list> \r\n<#assign temp=\"${c?keep_before_last('and')}\" data=data?replace('#$uk$#','${temp}')> ${data?keep_before_last(',')}<#sep>,</#sep>\r\n</#list>\r\nwhere ${id} in(${w?keep_before_last(',')}) <#if ch['${app.id_type}']??>and ${app.id_type} = ${session.user_id} </#if>\r\n</#compress>",
+          "value_type": "ftl",
+          "output_variable": "output1",
+          "type": "sql-update",
+          "id": "PBXanBUI3Qf5v",
+          "next": {
+            "success": "PBXzKyxTwD7O7",
+            "failure": "PBXzHSxV7HoiQ"
+          }
+        },
+        {
+          "name": "output3",
+          "value": "<#assign id_type_check=output[0].json> <#assign ch=id_type_check?eval>  <#compress> update ${request.path.table_name} set <#assign u=\"\" id=\"\" c=\"\" w=\"\" v1=\"#$vk$#=if(#$uk$#,'#$vv$#',#$vk$#)\" data=\"\"> <#list request.body.data as i> <#assign c=\"\" data=\"\"> <#list i as k,v>  <#if k?lower_case=='id'><#assign c+= \" ${k}='${v}' and\" id=\"${k}\" w+='${v},'> <#else> <#assign data +=v1?replace('#$vv$#',v)?replace('#$vk$#',k)+','> </#if>  </#list>  <#assign temp=\"${c?keep_before_last('and')}\" data=data?replace('#$uk$#','${temp}')> ${data?keep_before_last(',')}<#sep>,</#sep> </#list> where ${id} in(${w?keep_before_last(',')}) <#if ch['${app.id_type}']??>and ${app.id_type} = ${user_id} </#if> </#compress>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXZUTh6kUzHl",
+          "next": {
+            "success": "PBXMJSPNEs8Uq",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "output2",
+          "http_response_code": "400",
+          "response_content_type": "application/json; charset=utf8",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXklzLXEkn7I",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "output_variable": "a",
+          "if_type": "value",
+          "variable1": "{{request.params.preview}}",
+          "comparator": "equal_to",
+          "variable2": "true",
+          "value_type": "hb",
+          "type": "if-condition",
+          "id": "PBXyqRioiSFds",
+          "next": {
+            "success": "PBXZUTh6kUzHl",
+            "failure": "PBXanBUI3Qf5v"
+          }
+        },
+        {
+          "variable_name": "output1",
+          "http_response_code": "200",
+          "response_content_type": "application/json; charset=utf8",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXzKyxTwD7O7",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "output2",
+          "value": "Bulk Update Failed",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXzHSxV7HoiQ",
+          "next": {
+            "success": "PBXklzLXEkn7I",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "output3",
+          "value": "{{{output}}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBX02ney1Avzk",
+          "next": {
+            "success": "PBXMJSPNEs8Uq",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29474,
+      "name": "bulk_delete",
+      "trigger": "rest",
+      "expression": "/bulk/{table_name}",
+      "method": "DELETE",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXyh7KEC2TB7"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "delete from ${request.path.table_name} where id in (${request.params.id}) and ${app.id_type}=${domain_id}\r\n\r\n",
+          "value_type": "ftl",
+          "output_variable": "bulk_delete",
+          "type": "sql-delete",
+          "id": "PBX8vSCDTbJb5",
+          "next": {
+            "success": "PBXpgh79oKcCF",
+            "failure": "PBXysm86HdRGn"
+          }
+        },
+        {
+          "name": "bulk_delete",
+          "value": "delete from ${request.path.table_name} where id in (${request.params.id}) and ${app.id_type}=${domain_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXysm86HdRGn",
+          "next": {
+            "success": "PBX2ypXNhUSe8",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "bulk_delete",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXpgh79oKcCF",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "bulk_delete",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBX2ypXNhUSe8",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.user_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXyh7KEC2TB7",
+          "next": {
+            "success": "PBX8vSCDTbJb5",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29475,
+      "name": "retrieve_tag",
+      "trigger": "rest",
+      "expression": "/map/tag/{table_name}",
+      "method": "GET",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBX2OywiTS572"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select \r\n<#list request.params.fields?split(\",\") as row>\r\n${request.path.table_name}.${row}<#sep>, </#sep>\r\n</#list> from tag\r\nJOIN ${request.path.table_name}_tag on tag.id=${request.path.table_name}_tag.tag_id\r\nJOIN ${request.path.table_name} on ${request.path.table_name}_tag.${request.path.table_name}_id=${request.path.table_name}.id\r\nwhere tag.name='${request.params.tag_name}' and tag.${app.id_type}=${domain_id} and ${request.path.table_name}.${app.id_type}=${domain_id} and ${request.path.table_name}_tag.${app.id_type}=${domain_id}\r\n<#if request.params.group_by??>group by ${request.params.group_by} </#if>\r\n<#if request.params.having??>having ${request.params.having} </#if>\r\n<#if request.params.order_by??>order by ${request.params.order_by} </#if>\r\n<#if request.params.order_by_type??> ${request.params.order_by_type} </#if>\r\n<#if request.params.limit??>limit ${request.params.limit} </#if>\r\n<#if request.params.offset??>offset ${request.params.offset} </#if>\r\n",
+          "value_type": "ftl",
+          "output_variable": "retrieve",
+          "type": "sql",
+          "id": "PBXrJEQma70I7",
+          "next": {
+            "success": "PBXM7nvPcscq2",
+            "failure": "PBXRAt5EafdlN"
+          }
+        },
+        {
+          "variable_name": "retrieve",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXM7nvPcscq2",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "retrieve",
+          "value": "select  <#list request.params.fields?split(\",\") as row> ${request.path.table_name}.${row}<#sep>, </#sep> </#list> from tag JOIN ${request.path.table_name}_tag on tag.id=${request.path.table_name}_tag.tag_id JOIN ${request.path.table_name} on ${request.path.table_name}_tag.${request.path.table_name}_id=${request.path.table_name}.id where tag.name='${request.params.tag_name}' and tag.${app.id_type}=${domain_id} and ${request.path.table_name}.${app.id_type}=${domain_id} and ${request.path.table_name}_tag.${app.id_type}=${domain_id} <#if request.params.group_by??>group by ${request.params.group_by} </#if> <#if request.params.having??>having ${request.params.having} </#if> <#if request.params.order_by??>order by ${request.params.order_by} </#if> <#if request.params.order_by_type??> ${request.params.order_by_type} </#if> <#if request.params.limit??>limit ${request.params.limit} </#if> <#if request.params.offset??>offset ${request.params.offset} </#if>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXRAt5EafdlN",
+          "next": {
+            "success": "PBXUmeAVCodVy",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "retrieve",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXUmeAVCodVy",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBX2OywiTS572",
+          "next": {
+            "success": "PBXrJEQma70I7",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29476,
+      "name": "insert_tag_entity",
+      "trigger": "rest",
+      "expression": "/map/tag/{id}/{table_name}",
+      "method": "POST",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXe0U9XsrMd3"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "INSERT INTO ${request.path.table_name}_tag(tag_id,${app.id_type},<#list request.body?keys as k> ${request.body?keys?join(\", \")}</#list>) values (\r\n<#list request.body?keys as k>\r\n<#list request.body[k] as v>\r\n<#if v?counter == request.body[k]?size>${request.path.id},${domain_id},'${v}')<#else>${request.path.id},${domain_id},'${v}'),(</#if>\r\n</#list>\r\n</#list>",
+          "value_type": "ftl",
+          "output_variable": "insert",
+          "type": "sql-insert",
+          "id": "PBXsGEeBJTm8u",
+          "next": {
+            "success": "PBXfw2aP3x2yK",
+            "failure": "PBXyS1EMTtZxu"
+          }
+        },
+        {
+          "variable_name": "insert",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXfw2aP3x2yK",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "insert",
+          "value": "INSERT INTO ${request.path.table_name}_tag(tag_id,${app.id_type},<#list request.body?keys as k> ${request.body?keys?join(\", \")}</#list>) values ( <#list request.body?keys as k> <#list request.body[k] as v> <#if v?counter == request.body[k]?size>${request.path.id},${domain_id},'${v}')<#else>${request.path.id},${domain_id},'${v}'),(</#if> </#list> </#list>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXyS1EMTtZxu",
+          "next": {
+            "success": "PBXa38H9R4TeG",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "insert",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXa38H9R4TeG",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXe0U9XsrMd3",
+          "next": {
+            "success": "PBXsGEeBJTm8u",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29477,
+      "name": "delete_tag_entity",
+      "trigger": "rest",
+      "expression": "/map/tag/{id}/{table_name}",
+      "method": "DELETE",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXxGZp2AQDXH"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "delete from ${request.path.table_name}_tag where tag_id = ${request.path.id} and ${request.path.table_name}_id \r\nin (${request.params.ids}) and ${request.path.table_name}_tag.${app.id_type}=${domain_id}",
+          "value_type": "ftl",
+          "output_variable": "delete",
+          "type": "sql-delete",
+          "id": "PBXT8IvDwgzAO",
+          "next": {
+            "success": "PBXtt3qTovE4g",
+            "failure": "PBXGqy8LxbVMZ"
+          }
+        },
+        {
+          "variable_name": "delete",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXtt3qTovE4g",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "del",
+          "value": "delete from ${request.path.table_name}_tag where tag_id = ${request.path.id} and ${request.path.table_name}_id  in (${request.params.ids}) and ${request.path.table_name}_tag.${app.id_type}=${domain_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXGqy8LxbVMZ",
+          "next": {
+            "success": "PBX7aTlZeOVSZ",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "del",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBX7aTlZeOVSZ",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXxGZp2AQDXH",
+          "next": {
+            "success": "PBXT8IvDwgzAO",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29478,
+      "name": "joins",
+      "trigger": "rest",
+      "expression": "/joins",
+      "method": "POST",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXVaVDA1172I"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "<#assign a = ''>\r\nSELECT ${request.body.data.fields} FROM \r\n<#list request.body.data.tables as t>\r\n<#list t as key, value>\r\n<#if t?index==0>\r\n<#assign a+=\" \"+key+\" \">\r\n<#assign a+=\" \"+value+\" \">\r\n</#if>\r\n</#list>\r\n</#list>\r\n<#if request.body.data.join??>\r\n<#list request.body.data.join as k2><#list k2 as key, value>\r\n<#if key==\"table1\">\r\n<#assign a+=\" ON \"+value>\r\n<#elseif key==\"join_column1\">\r\n<#assign a+=\".\"+value>\r\n<#elseif key==\"table2\">\r\n<#assign a+=\" = \"+value> \r\n<#elseif key==\"join_column2\">\r\n<#assign a+=\".\"+value> \r\n<#elseif key?? && key==\"join_type\">\r\n<#assign a+=\" \"+value+\" \"> <#list request.body.data.join as k3><#list k3 as key, value><#if key==\"table2\" && k2?counter == k3?counter>\r\n<#list request.body.data.tables as t>\r\n<#list t as key, value>\r\n<#if k3?counter==t?index>\r\n<#assign a+=\" \"+key>\r\n</#if>\r\n</#list>\r\n</#list>\r\n<#assign a+=\" \"+value>\r\n</#if></#list></#list>\r\n</#if> \r\n</#list></#list>\r\n</#if>\r\n\r\n<#assign a+=\" where\">\r\n<#list request.body.data.tables as t>\r\n<#list t as key, value>\r\n<#if t?index==request.body.data.tables?size-1>\r\n<#assign a+=\" \"+value+\".\"+ app.id_type +\"=\">\r\n<#assign a+=domain_id +\" \">\r\n\r\n<#if request.body.data.where??>\r\n<#assign a+=\"and\"+\" \"> \r\n</#if>\r\n</#if>\r\n<#if t?index!=request.body.data.tables?size-1>\r\n<#assign a+=\" \"+value+\".\"+ app.id_type +\"=\">\r\n<#assign a+=domain_id +\" \">\r\n<#assign a+=\"and\"+\" \">\r\n</#if>\r\n</#list></#list>\r\n\r\n\r\n\r\n\r\n<#if request.body.data.where??><#assign a +=request.body.data.where +\" \"> </#if>\r\n<#if request.body.data.group_by??><#assign a += \" group by \" + request.body.data.group_by +\" \"> </#if>\r\n<#if request.body.data.having??><#assign a += \" having \" + request.body.data.having +\" \"> </#if>\r\n<#if request.body.data.order_by??><#assign a += \" order by \" + request.body.data.order_by +\" \"> </#if>\r\n <#if request.body.data.order_by_type??><#assign a += request.body.data.order_by_type></#if><#if request.body.data.limit??><#assign a += \" limit \" + request.body.data.limit+\" \"> </#if> <#if request.body.data.offset??><#assign a += \" offset \" + request.body.data.offset></#if>\r\n${a} ",
+          "value_type": "ftl",
+          "output_variable": "select",
+          "type": "sql",
+          "id": "PBXhMFDmDkmJe",
+          "next": {
+            "success": "PBXvBRE3DIlg6",
+            "failure": "PBXPyTK6I4gyV"
+          }
+        },
+        {
+          "name": "select1",
+          "value": "<#assign a = ''> SELECT ${request.body.data.fields} FROM  <#list request.body.data.tables as t> <#list t as key, value> <#if t?index==0> <#assign a+=\" \"+key+\" \"> <#assign a+=\" \"+value+\" \"> </#if> </#list> </#list> <#if request.body.data.join??> <#list request.body.data.join as k2><#list k2 as key, value> <#if key==\"table1\"> <#assign a+=\" ON \"+value> <#elseif key==\"join_column1\"> <#assign a+=\".\"+value> <#elseif key==\"table2\"> <#assign a+=\" = \"+value>  <#elseif key==\"join_column2\"> <#assign a+=\".\"+value>  <#elseif key?? && key==\"join_type\"> <#assign a+=\" \"+value+\" \"> <#list request.body.data.join as k3><#list k3 as key, value><#if key==\"table2\" && k2?counter == k3?counter> <#list request.body.data.tables as t> <#list t as key, value> <#if k3?counter==t?index> <#assign a+=\" \"+key> </#if> </#list> </#list> <#assign a+=\" \"+value> </#if></#list></#list> </#if>  </#list></#list> </#if>  <#assign a+=\" where\"> <#list request.body.data.tables as t> <#list t as key, value> <#if t?index==request.body.data.tables?size-1> <#assign a+=\" \"+value+\".\"+ app.id_type +\"=\"> <#assign a+=domain_id +\" \">  <#if request.body.data.where??> <#assign a+=\"and\"+\" \">  </#if> </#if> <#if t?index!=request.body.data.tables?size-1> <#assign a+=\" \"+value+\".\"+ app.id_type +\"=\"> <#assign a+=domain_id +\" \"> <#assign a+=\"and\"+\" \"> </#if> </#list></#list>     <#if request.body.data.where??><#assign a +=request.body.data.where +\" \"> </#if> <#if request.body.data.group_by??><#assign a += \" group by \" + request.body.data.group_by +\" \"> </#if> <#if request.body.data.having??><#assign a += \" having \" + request.body.data.having +\" \"> </#if> <#if request.body.data.order_by??><#assign a += \" order by \" + request.body.data.order_by +\" \"> </#if>  <#if request.body.data.order_by_type??><#assign a += request.body.data.order_by_type></#if><#if request.body.data.limit??><#assign a += \" limit \" + request.body.data.limit+\" \"> </#if> <#if request.body.data.offset??><#assign a += \" offset \" + request.body.data.offset></#if> ${a} ",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXPyTK6I4gyV",
+          "next": {
+            "success": "PBXuOZ2qEBuVl",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "select",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXvBRE3DIlg6",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "select1",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXuOZ2qEBuVl",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXVaVDA1172I",
+          "next": {
+            "success": "PBXhMFDmDkmJe",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29479,
+      "name": "filters",
+      "trigger": "rest",
+      "expression": "/filters",
+      "method": "POST",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXJTat8v5BuW"
+          }
+        },
+        {
+          "name": "filter",
+          "value": "<#assign a = ''> SELECT ${request.body.data.fields} FROM  <#list request.body.data.tables as t> <#list t as key, value> <#if t?index==0> <#assign a+=\" \"+key+\" \"> <#assign a+=\" \"+value+\" \"> </#if> </#list> </#list> <#if request.body.data.join??> <#list request.body.data.join as k2><#list k2 as key, value> <#if key==\"table1\"> <#assign a+=\" ON \"+value> <#elseif key==\"join_column1\"> <#assign a+=\".\"+value> <#elseif key==\"table2\"> <#assign a+=\" = \"+value>  <#elseif key==\"join_column2\"> <#assign a+=\".\"+value>  <#elseif key?? && key==\"join_type\"> <#assign a+=\" \"+value+\" \"> <#list request.body.data.join as k3><#list k3 as key, value><#if key==\"table2\" && k2?counter == k3?counter> <#list request.body.data.tables as t> <#list t as key, value> <#if k3?counter==t?index> <#assign a+=\" \"+key> </#if> </#list> </#list> <#assign a+=\" \"+value> </#if></#list></#list> </#if>  </#list></#list> </#if> ${a}    <#assign a+=\" where\"> <#list request.body.data.tables as t> <#list t as key, value> <#if t?index==request.body.data.tables?size-1> <#assign a+=\" \"+value+\".\"+ app.id_type +\"=\"> <#assign a+=domain_id +\" \">  <#if request.body.data.where??> <#assign a+=\"and\"+\" \">  </#if> </#if> <#if t?index!=request.body.data.tables?size-1> <#assign a+=\" \"+value+\".\"+ app.id_type +\"=\"> <#assign a+=domain_id +\" \"> <#assign a+=\"and\"+\" \"> </#if> </#list></#list>    <#assign b = ''> <#assign b+=\" where\"> <#list request.body.data.tables as t> <#list t as key, value> <#if t?index==request.body.data.tables?size-1> <#assign b+=\" \"+value+\".\"+ app.id_type +\"=\"> <#assign b+=domain_id +\" \"> <#assign a+=\"and\"+\" \">  </#if> <#if t?index!=request.body.data.tables?size-1> <#assign b+=\" \"+value+\".\"+ app.id_type +\"=\"> <#assign b+=domain_id +\" \"> <#assign b+=\"and\"+\" \"> </#if> </#list></#list> <#assign b+=\"and\"+\" \"> <#list request.body.data.filters as k1><#list k1 as key, value> <#if key==\"table_name\"> <#assign b+=value> <#elseif key==\"field_name\"> <#assign b+=\".\"+value> <#elseif key==\"operator\"> <#if value == \"EQ\">  <#assign b+=\" \"+\"=\"> <#elseif value == \"NE\">  <#assign b+=\" \"+\"!=\"> <#elseif value == \"GT\">  <#assign b+=\" \"+\">\"> <#elseif value == \"LT\">  <#assign b+=\" \"+\"<\"> <#elseif value == \"GTE\">  <#assign b+=\" \"+\">=\"> <#elseif value == \"LTE\">  <#assign b+=\" \"+\"<=\"> <#elseif value == \"NULL\">  <#assign b+=\" \"+\"IS NULL\"> <#elseif value == \"NOTNULL\">  <#assign b+=\" \"+\"IS NOT NULL\"> <#elseif value == \"BW\">  <#assign b+=\" \"+\"BETWEEN\"> <#elseif value == \"LIKE\">  <#assign b+=\" \"+\"LIKE '%\"> <#elseif value == \"NOTLIKE\">  <#assign b+=\" \"+\"NOT LIKE '%\"> <#elseif value == \"STARTSWITH\">  <#assign b+=\" \"+\"LIKE \"> </#if> <#elseif key?? && key==\"value1\"> <#if k1.operator==\"LIKE\" || k1.operator==\"NOTLIKE\" || k1.operator==\"STARTSWITH\"> <#assign b+=\"\"+value +\"%'\"> <#elseif k1.operator=\"NULL\" || k1.operator=\"NOTNULL\"> <#else> <#assign b+=\" \"+\"'\"+value+\"'\" > </#if> <#elseif key?? && key==\"filter_condition\"> <#assign b+=\" \"+value+\" \"> </#if>  </#list></#list><#if request.body.data.order_by??><#assign b += \" order by \" + request.body.data.order_by +\" \"> </#if> <#if request.body.data.order_by_type??><#assign b += request.body.data.order_by_type></#if><#if request.body.data.limit??><#assign b += \" limit \" + request.body.data.limit+\" \"> </#if> <#if request.body.data.offset??><#assign b += \" offset \" + request.body.data.offset></#if> ${b}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBX2XFFJ7Jbfr",
+          "next": {
+            "success": "PBX6Dma6AHbTZ",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "filter",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXOi8RxETzXB",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "filter",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBX6Dma6AHbTZ",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "<#assign a = ''>\r\nSELECT ${request.body.data.fields} FROM \r\n<#list request.body.data.tables as t>\r\n<#list t as key, value>\r\n<#if t?index==0>\r\n<#assign a+=\" \"+key+\" \">\r\n<#assign a+=\" \"+value+\" \">\r\n</#if>\r\n</#list>\r\n</#list>\r\n<#if request.body.data.join??>\r\n<#list request.body.data.join as k2><#list k2 as key, value>\r\n<#if key==\"table1\">\r\n<#assign a+=\" ON \"+value>\r\n<#elseif key==\"join_column1\">\r\n<#assign a+=\".\"+value>\r\n<#elseif key==\"table2\">\r\n<#assign a+=\" = \"+value> \r\n<#elseif key==\"join_column2\">\r\n<#assign a+=\".\"+value> \r\n<#elseif key?? && key==\"join_type\">\r\n<#assign a+=\" \"+value+\" \"> <#list request.body.data.join as k3><#list k3 as key, value><#if key==\"table2\" && k2?counter == k3?counter>\r\n<#list request.body.data.tables as t>\r\n<#list t as key, value>\r\n<#if k3?counter==t?index>\r\n<#assign a+=\" \"+key>\r\n</#if>\r\n</#list>\r\n</#list>\r\n<#assign a+=\" \"+value>\r\n</#if></#list></#list>\r\n</#if> \r\n</#list></#list>\r\n</#if>\r\n${a} \r\n\r\n\r\n<#assign a+=\" where\">\r\n<#list request.body.data.tables as t>\r\n<#list t as key, value>\r\n<#if t?index==request.body.data.tables?size-1>\r\n<#assign a+=\" \"+value+\".\"+ app.id_type +\"=\">\r\n<#assign a+=domain_id +\" \">\r\n\r\n<#if request.body.data.where??>\r\n<#assign a+=\"and\"+\" \"> \r\n</#if>\r\n</#if>\r\n<#if t?index!=request.body.data.tables?size-1>\r\n<#assign a+=\" \"+value+\".\"+ app.id_type +\"=\">\r\n<#assign a+=domain_id +\" \">\r\n<#assign a+=\"and\"+\" \">\r\n</#if>\r\n</#list></#list>\r\n\r\n\r\n\r\n<#assign b = ''>\r\n<#assign b+=\" where\">\r\n<#list request.body.data.tables as t>\r\n<#list t as key, value>\r\n<#if t?index==request.body.data.tables?size-1>\r\n<#assign b+=\" \"+value+\".\"+ app.id_type +\"=\">\r\n<#assign b+=domain_id +\" \">\r\n<#assign a+=\"and\"+\" \"> \r\n</#if>\r\n<#if t?index!=request.body.data.tables?size-1>\r\n<#assign b+=\" \"+value+\".\"+ app.id_type +\"=\">\r\n<#assign b+=domain_id +\" \">\r\n<#assign b+=\"and\"+\" \">\r\n</#if>\r\n</#list></#list>\r\n<#assign b+=\"and\"+\" \">\r\n<#list request.body.data.filters as k1><#list k1 as key, value>\r\n<#if key==\"table_name\">\r\n<#assign b+=value>\r\n<#elseif key==\"field_name\">\r\n<#assign b+=\".\"+value>\r\n<#elseif key==\"operator\">\r\n<#if value == \"EQ\"> \r\n<#assign b+=\" \"+\"=\">\r\n<#elseif value == \"NE\"> \r\n<#assign b+=\" \"+\"!=\">\r\n<#elseif value == \"GT\"> \r\n<#assign b+=\" \"+\">\">\r\n<#elseif value == \"LT\"> \r\n<#assign b+=\" \"+\"<\">\r\n<#elseif value == \"GTE\"> \r\n<#assign b+=\" \"+\">=\">\r\n<#elseif value == \"LTE\"> \r\n<#assign b+=\" \"+\"<=\">\r\n<#elseif value == \"NULL\"> \r\n<#assign b+=\" \"+\"IS NULL\">\r\n<#elseif value == \"NOTNULL\"> \r\n<#assign b+=\" \"+\"IS NOT NULL\">\r\n<#elseif value == \"BW\"> \r\n<#assign b+=\" \"+\"BETWEEN\">\r\n<#elseif value == \"LIKE\"> \r\n<#assign b+=\" \"+\"LIKE '%\">\r\n<#elseif value == \"NOTLIKE\"> \r\n<#assign b+=\" \"+\"NOT LIKE '%\">\r\n<#elseif value == \"STARTSWITH\"> \r\n<#assign b+=\" \"+\"LIKE \">\r\n</#if>\r\n<#elseif key?? && key==\"value1\">\r\n<#if k1.operator==\"LIKE\" || k1.operator==\"NOTLIKE\" || k1.operator==\"STARTSWITH\">\r\n<#assign b+=\"\"+value +\"%'\">\r\n<#elseif k1.operator=\"NULL\" || k1.operator=\"NOTNULL\">\r\n<#else>\r\n<#assign b+=\" \"+\"'\"+value+\"'\" >\r\n</#if>\r\n<#elseif key?? && key==\"filter_condition\">\r\n<#assign b+=\" \"+value+\" \">\r\n</#if> \r\n</#list></#list><#if request.body.data.order_by??><#assign b += \" order by \" + request.body.data.order_by +\" \"> </#if> <#if request.body.data.order_by_type??><#assign b += request.body.data.order_by_type></#if><#if request.body.data.limit??><#assign b += \" limit \" + request.body.data.limit+\" \"> </#if> <#if request.body.data.offset??><#assign b += \" offset \" + request.body.data.offset></#if>\r\n${b}",
+          "value_type": "ftl",
+          "output_variable": "filter",
+          "type": "sql",
+          "id": "PBXitMH9QEeVl",
+          "next": {
+            "success": "PBXOi8RxETzXB",
+            "failure": "PBX2XFFJ7Jbfr"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXJTat8v5BuW",
+          "next": {
+            "success": "PBXitMH9QEeVl",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29480,
+      "name": "jwt",
+      "trigger": "rest",
+      "expression": "/jwt/{table_name}",
+      "method": "GET",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXLWnKH2Pprz"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select {{app.id_type}} as tenant_id from {{request.path.table_name}} where email='{{request.params.email}}'",
+          "value_type": "hb",
+          "output_variable": "user_details",
+          "type": "sql-one",
+          "id": "PBXLWnKH2Pprz",
+          "next": {
+            "success": "PBXTmkDTmAkRd",
+            "failure": "PBXTLeW9KGfuF"
+          }
+        },
+        {
+          "output_variable": "jwt_values",
+          "value_type": "hb",
+          "subject": "jwt",
+          "plugin_name": "app_db",
+          "claims": [
+            {
+              "key": "tenant_id",
+              "value": "{{{user_details.tenant_id}}}"
+            }
+          ],
+          "type": "jwt",
+          "id": "PBXTmkDTmAkRd",
+          "next": {
+            "success": "PBX7R8PcHVvvA",
+            "failure": "PBXc0DyZIE1HC"
+          }
+        },
+        {
+          "name": "token",
+          "value": "{{{jwt_values}}}",
+          "value_type": "hb",
+          "path": "/",
+          "domain": ".appup.cloud",
+          "maxAge": "72000",
+          "version": "1",
+          "expires": "1000",
+          "discard": "false",
+          "secure": "true",
+          "httpOnly": "",
+          "comment": ".",
+          "type": "set-cookie",
+          "id": "PBX7R8PcHVvvA",
+          "next": {
+            "success": "PBXU8fTJTETge",
+            "failure": "PBXn9vvtAQWJz"
+          }
+        },
+        {
+          "variable_name": "jwt_values",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXU8fTJTETge",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "result",
+          "value": "select {{app.id_type}} from {{request.path.table_name}} where email='{{request.params.email}}'",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXTLeW9KGfuF",
+          "next": {
+            "success": "PBXuwEZmQlGHB",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "result",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXuwEZmQlGHB",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "fail",
+          "value": "failed to get cookie",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXn9vvtAQWJz",
+          "next": {
+            "success": "PBXoDf9DcmndI",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "fail",
+          "http_response_code": "200",
+          "response_content_type": "",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXoDf9DcmndI",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "user_details",
+          "value": "jwt failed",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXc0DyZIE1HC",
+          "next": {
+            "success": "PBXoDf9DcmndI",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29482,
+      "name": "sp",
+      "trigger": "rest",
+      "expression": "/sp/{sp_name}",
+      "method": "POST",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXWKNTqUl9RI"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "call {{request.path.sp_name}}({{#if request.params.parameters}}{{{request.params.parameters}}}{{else}}{{/if}});",
+          "type": "sql-invoke-stored-procedure",
+          "id": "PBXWKNTqUl9RI",
+          "next": {
+            "success": "PBX7TTZOJwPaR",
+            "failure": "PBXEQZymaTEgs"
+          }
+        },
+        {
+          "name": "results",
+          "value": "fail call {{request.path.sp_name}}({{#if request.params.parameters}}{{{request.params.parameters}}}{{else}}{{/if}});",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXEQZymaTEgs",
+          "next": {
+            "success": "PBXonSbvv6SaB",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "results",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXonSbvv6SaB",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "result123",
+          "value": "success call {{request.path.sp_name}}({{#if request.params.parameters}}{{{request.params.parameters}}}{{else}}{{/if}});",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBX7TTZOJwPaR",
+          "next": {
+            "success": "PBXBP5BF1RG2H",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "status",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXL2kbSPEKyx",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "result12",
+          "value": "fail call {{request.path.sp_name}}({{#if request.params.parameters}}{{{request.params.parameters}}}{{else}}{{/if}});",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXoTXIf6roBN",
+          "next": {
+            "success": "PBXsTP0SzZC1t",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select ({{parameters}});",
+          "value_type": "hb",
+          "output_variable": "status",
+          "type": "sql",
+          "id": "PBXT0sQ5lK39E",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "status",
+          "value": "success select({{parameters}});",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBX1TiSOUp59a",
+          "next": {
+            "success": "PBXL2kbSPEKyx",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "result12",
+          "http_response_code": "503",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXsTP0SzZC1t",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "result123",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBX91FlD1NsAL",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "result123",
+          "value": "success call {{request.path.sp_name}}({{#if request.params.parameters}}{{{request.params.parameters}}}{{else}}{{/if}});",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXBP5BF1RG2H",
+          "next": {
+            "success": "PBX91FlD1NsAL",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29483,
+      "name": "select",
+      "trigger": "rest",
+      "expression": "/bulk/{table_name}",
+      "method": "GET",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXVEyyWv1yrP"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select <#if request.params.fields??> ${request.params.fields} <#else> *  </#if> from ${request.path.table_name}\r\n\r\nwhere  ${app.id_type}=${domain_id} <#if request.params.where??> and ${request.params.where} </#if>\r\n <#if request.params.group_by??> group by ${request.params.group_by} </#if>\r\n<#if request.params.having??> having ${request.params.having} </#if>\r\n<#if request.params.order_by??> order by ${request.params.order_by} </#if>\r\n<#if request.params.order_by_type??>  ${request.params.order_by_type} </#if>\r\n<#if request.params.limit??> limit ${request.params.limit} </#if>\r\n<#if request.params.offset??> offset ${request.params.offset} </#if>\r\n\r\n",
+          "value_type": "ftl",
+          "output_variable": "select",
+          "type": "sql",
+          "id": "PBX7Akg8VVnwF",
+          "next": {
+            "success": "PBXNJXXTZxTrS",
+            "failure": "PBXy4O2h0DyJm"
+          }
+        },
+        {
+          "variable_name": "select",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXNJXXTZxTrS",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "sel",
+          "value": "select <#if request.params.fields??> ${request.params.fields} <#else> *  </#if> from ${request.path.table_name}  where  ${app.id_type}=${domain_id} <#if request.params.where??> and ${request.params.where} </#if>  <#if request.params.group_by??> group by ${request.params.group_by} </#if> <#if request.params.having??> having ${request.params.having} </#if> <#if request.params.order_by??> order by ${request.params.order_by} </#if> <#if request.params.order_by_type??>  ${request.params.order_by_type} </#if> <#if request.params.limit??> limit ${request.params.limit} </#if> <#if request.params.offset??> offset ${request.params.offset} </#if>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXy4O2h0DyJm",
+          "next": {
+            "success": "PBXrMKL2TxRH0",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "select",
+          "http_response_code": "400",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXrMKL2TxRH0",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXVEyyWv1yrP",
+          "next": {
+            "success": "PBX7Akg8VVnwF",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29484,
+      "name": "insert_custom_field",
+      "trigger": "rest",
+      "expression": "/cf/{table_name}/{id}",
+      "method": "POST",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXwCfbhgB4IB"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "INSERT INTO ${request.path.table_name}_custom_field(${app.id_type},${request.path.table_name}_id,<#assign c = request.body.data?first><#list c?keys as k><#if k?counter == c?size>${k}<#else>${k},</#if></#list>) VALUES<#list request.body.data as k1>(${domain_id},<#list k1?values as v><#if k1?counter == request.body.data?size><#if v?counter == k1?size>'${v}')<#else>${request.path.id},'${v}',</#if><#elseif v?counter== k1?size>'${v}'), <#else>${request.path.id},'${v}',</#if></#list></#list>",
+          "value_type": "ftl",
+          "output_variable": "insert",
+          "type": "sql-insert",
+          "id": "PBXwncDgmGc1g",
+          "next": {
+            "success": "PBXMTEmPRXgDn",
+            "failure": "PBXF3Ov3LzumE"
+          }
+        },
+        {
+          "name": "insert",
+          "value": "INSERT INTO ${request.path.table_name}_custom_field(${app.id_type},${request.path.table_name}_id,<#assign c = request.body.data?first><#list c?keys as k><#if k?counter == c?size>${k}<#else>${k},</#if></#list>) VALUES<#list request.body.data as k1>(${domain_id},<#list k1?values as v><#if k1?counter == request.body.data?size><#if v?counter == k1?size>'${v}')<#else>${request.path.id},'${v}',</#if><#elseif v?counter== k1?size>'${v}'), <#else>${request.path.id},'${v}',</#if></#list></#list>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXF3Ov3LzumE",
+          "next": {
+            "success": "PBXesgVtyEnPc",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "insert",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXMTEmPRXgDn",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "insert",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXesgVtyEnPc",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXwCfbhgB4IB",
+          "next": {
+            "success": "PBXwncDgmGc1g",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29485,
+      "name": "update_custom_field",
+      "trigger": "rest",
+      "expression": "/cf/{table_name}/{id}",
+      "method": "PUT",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXTbuH3dpTCu"
+          }
+        },
+        {
+          "name": "u",
+          "value": "update ${request.path.table_name}_custom_field set value=case custom_field_id <#list request.body.data as x>  when ${x.custom_field_id} then '${x.value}' </#list>  end where custom_field_id in (<#list request.body.data as x> <#if x?counter==request.body.data?size>${x.custom_field_id} <#else>${x.custom_field_id}, </#if></#list>) <#if request.path.id??> and ${request.path.table_name}_id=${request.path.id}</#if> and ${request.path.table_name}_custom_field.${app.id_type}=${domain_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXsOiGWoJk2r",
+          "next": {
+            "success": "PBXCmmuJMX69N",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "u",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXCEbkXNyZ0H",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "u",
+          "http_response_code": "400",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXCmmuJMX69N",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "update ${request.path.table_name}_custom_field set value=case custom_field_id <#list request.body.data as x> \r\nwhen ${x.custom_field_id} then '${x.value}' </#list> \r\nend where custom_field_id in (<#list request.body.data as x> <#if x?counter==request.body.data?size>${x.custom_field_id} <#else>${x.custom_field_id}, </#if></#list>)\r\n<#if request.path.id??> and ${request.path.table_name}_id=${request.path.id}</#if>\r\nand ${request.path.table_name}_custom_field.${app.id_type}=${domain_id}",
+          "value_type": "ftl",
+          "output_variable": "u",
+          "type": "sql-update",
+          "id": "PBXr53TgJNFwA",
+          "next": {
+            "success": "PBXCEbkXNyZ0H",
+            "failure": "PBXsOiGWoJk2r"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXTbuH3dpTCu",
+          "next": {
+            "success": "PBXr53TgJNFwA",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29488,
+      "name": "delete_custom_entity",
+      "trigger": "rest",
+      "expression": "/cf/{table_name}/{id}",
+      "method": "DELETE",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXPoFwVJp6qU"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "delete <#if request.path.id??> custom_field,${request.path.table_name}_custom_field</#if>\r\nfrom ${request.path.table_name}  join \r\n${request.path.table_name}_custom_field  on \r\n${request.path.table_name}.id = ${request.path.table_name}_custom_field.${request.path.table_name}_id\r\njoin custom_field  on custom_field.id=${request.path.table_name}_custom_field.custom_field_id \r\n<#if request.path.id??> where \r\ncustom_field.id=${request.path.id} and  ${request.path.table_name}.${app.id_type}=${domain_id} and ${request.path.table_name}_custom_field.${app.id_type}=${domain_id}</#if>",
+          "value_type": "ftl",
+          "output_variable": "delete_custom",
+          "type": "sql-delete",
+          "id": "PBXwo3Fwx3Txl",
+          "next": {
+            "success": "PBXTcTGTWzFmf",
+            "failure": "PBXk8JRMTbCzt"
+          }
+        },
+        {
+          "name": "delete_custom",
+          "value": "delete <#if request.path.id??> custom_field,${request.path.table_name}_custom_field</#if> from ${request.path.table_name}  join  ${request.path.table_name}_custom_field  on  ${request.path.table_name}.id = ${request.path.table_name}_custom_field.${request.path.table_name}_id join custom_field  on custom_field.id=${request.path.table_name}_custom_field.custom_field_id  <#if request.path.id??> where  custom_field.id=${request.path.id} and  ${request.path.table_name}.${app.id_type}=${domain_id} and ${request.path.table_name}_custom_field.${app.id_type}=${domain_id}</#if>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXk8JRMTbCzt",
+          "next": {
+            "success": "PBX40HlaWav87",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "delete_custom",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXTcTGTWzFmf",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "delete_custom",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBX40HlaWav87",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXPoFwVJp6qU",
+          "next": {
+            "success": "PBXwo3Fwx3Txl",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29486,
+      "name": "retrieve_custom_entity",
+      "trigger": "rest",
+      "expression": "/cf/{table_name}",
+      "method": "GET",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXNgKMboAmMq"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select custom_field.name,${request.path.table_name}_custom_field.value \r\n<#if request.params.custom_fields??>,<#list request.params.custom_fields?split(\",\") as row>\r\ncustom_field.${row}<#sep>,</#sep></#list></#if>\r\nfrom custom_field \r\nLEFT JOIN ${request.path.table_name}_custom_field  on custom_field.id=${request.path.table_name}_custom_field.custom_field_id <#if request.params.id??>\r\nand ${request.path.table_name}_custom_field.${request.path.table_name}_id=${request.params.id}\r\n</#if>\r\nwhere custom_field.${app.id_type}=${domain_id} and\r\n(${request.path.table_name}_custom_field.${app.id_type}=${domain_id} or\r\n${request.path.table_name}_custom_field.${request.path.table_name}_id is null)\r\n<#if request.params.where??> and ${request.params.where}</#if>",
+          "value_type": "ftl",
+          "output_variable": "retrieve",
+          "type": "sql",
+          "id": "PBXXyneTvTg4B",
+          "next": {
+            "success": "PBXaBe13lZTh0",
+            "failure": "PBXDMkysUkE5F"
+          }
+        },
+        {
+          "variable_name": "retrieve",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXaBe13lZTh0",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "retrieve",
+          "http_response_code": "400",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXAmKLlkAODN",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "retrieve",
+          "value": "select custom_field.name,${request.path.table_name}_custom_field.value  <#if request.params.custom_fields??>,<#list request.params.custom_fields?split(\",\") as row> custom_field.${row}<#sep>,</#sep></#list></#if> from custom_field  LEFT JOIN ${request.path.table_name}_custom_field  on custom_field.id=${request.path.table_name}_custom_field.custom_field_id <#if request.params.id??> and ${request.path.table_name}_custom_field.${request.path.table_name}_id=${request.params.id} </#if> where custom_field.${app.id_type}=${domain_id} and (${request.path.table_name}_custom_field.${app.id_type}=${domain_id} or ${request.path.table_name}_custom_field.${request.path.table_name}_id is null) <#if request.params.where??> and ${request.params.where}</#if>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXDMkysUkE5F",
+          "next": {
+            "success": "PBXAmKLlkAODN",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXNgKMboAmMq",
+          "next": {
+            "success": "PBXXyneTvTg4B",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29487,
+      "name": "custom_entity_search",
+      "trigger": "rest",
+      "expression": "/cf/search/{table_name}",
+      "method": "GET",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXMsmGB5f8IS"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select custom_field.name,${request.path.table_name}_custom_field.value \r\n<#if request.params.custom_fields??>,<#list request.params.custom_fields?split(\",\") as row>\r\ncustom_field.${row}<#sep>,</#sep></#list></#if>\r\n<#if request.params.entity_fields??>,<#list request.params.entity_fields?split(\",\") as row>\r\n${request.path.table_name}.${row}<#sep>,</#sep></#list></#if>\r\n\r\nfrom custom_field  \r\n\r\nLEFT JOIN ${request.path.table_name}_custom_field  on custom_field.id=${request.path.table_name}_custom_field.custom_field_id \r\n\r\nleft join ${request.path.table_name} on ${request.path.table_name}.id=${request.path.table_name}_custom_field.${request.path.table_name}_id\r\n \r\nwhere custom_field.${app.id_type}=${domain_id} and ${request.path.table_name}_custom_field.${app.id_type}=${domain_id} and ${request.path.table_name}.${app.id_type}=${domain_id} \r\n<#if request.params.where??> and  ${request.params.where}</#if>",
+          "value_type": "ftl",
+          "output_variable": "retrieve",
+          "type": "sql",
+          "id": "PBXXyneTvTg4B",
+          "next": {
+            "success": "PBXaBe13lZTh0",
+            "failure": "PBXDMkysUkE5F"
+          }
+        },
+        {
+          "variable_name": "retrieve",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXaBe13lZTh0",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "retrieve",
+          "http_response_code": "400",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXAmKLlkAODN",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "retrieve",
+          "value": "select custom_field.name,${request.path.table_name}_custom_field.value  <#if request.params.custom_fields??>,<#list request.params.custom_fields?split(\",\") as row> custom_field.${row}<#sep>,</#sep></#list></#if> <#if request.params.entity_fields??>,<#list request.params.entity_fields?split(\",\") as row> ${request.path.table_name}.${row}<#sep>,</#sep></#list></#if>  from custom_field    LEFT JOIN ${request.path.table_name}_custom_field  on custom_field.id=${request.path.table_name}_custom_field.custom_field_id   left join ${request.path.table_name} on ${request.path.table_name}.id=${request.path.table_name}_custom_field.${request.path.table_name}_id   where custom_field.${app.id_type}=${domain_id} and ${request.path.table_name}_custom_field.${app.id_type}=${domain_id} and ${request.path.table_name}.${app.id_type}=${domain_id}  <#if request.params.where??> and  ${request.params.where}</#if>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXDMkysUkE5F",
+          "next": {
+            "success": "PBXAmKLlkAODN",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXMsmGB5f8IS",
+          "next": {
+            "success": "PBXXyneTvTg4B",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29489,
+      "name": "upsert",
+      "trigger": "rest",
+      "expression": "/upsert/{tablename}",
+      "method": "POST",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXeOGL7Kohp9"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "INSERT INTO {{request.path.tablename}} ({{app.id_type}},{{request.body.fields}}) VALUES ({{{domain_id}}},{{{request.body.values}}}) on duplicate key update {{{request.body.update}}};",
+          "value_type": "hb",
+          "output_variable": "result",
+          "type": "sql-insert",
+          "id": "PBX7TaOz1xXto",
+          "next": {
+            "success": "PBXhrTAy3zuun",
+            "failure": "PBXfx0pTm7fmL"
+          }
+        },
+        {
+          "name": "output",
+          "value": "INSERT INTO {{request.path.tablename}} ({{app.id_type}},{{request.body.fields}}) VALUES ({{{domain_id}}},{{{request.body.values}}}) on duplicate key update {{{request.body.update}}};",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXfx0pTm7fmL",
+          "next": {
+            "success": "PBX14JPQA0wV5",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "result",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXhrTAy3zuun",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "output",
+          "http_response_code": "503",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBX14JPQA0wV5",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "{{{session.tenant_id}}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXeOGL7Kohp9",
+          "next": {
+            "success": "PBX7TaOz1xXto",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29490,
+      "name": "account_signup",
+      "trigger": "rest",
+      "expression": "/account/sign_up/{tablename}",
+      "method": "POST",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXpo89w65h5T"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select <#if request.params.field??> ${request.params.field} <#else> *  </#if> from `${request.path.tablename}`;",
+          "value_type": "ftl",
+          "output_variable": "output",
+          "type": "sql",
+          "id": "PBX9y6P5GzoIt",
+          "next": {
+            "success": "PBX9OTUiRcO3V",
+            "failure": "PBXcrCWmLwPr4"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "{{{query}}}",
+          "value_type": "hb",
+          "output_variable": "result",
+          "type": "sql-insert",
+          "id": "PBXs8qLM1kUEm",
+          "next": {
+            "success": "PBXiEXqEnDFg8",
+            "failure": "PBXAJBwDWMRFf"
+          }
+        },
+        {
+          "output_variable": "if_output_len",
+          "if_type": "value",
+          "variable1": "{{index}}",
+          "comparator": "less_than",
+          "variable2": "{{length}}",
+          "value_type": "hb",
+          "type": "if-condition",
+          "id": "PBXiEXqEnDFg8",
+          "next": {
+            "success": "PBXZ36BU6pmnR",
+            "failure": "PBXR2S4bvq51a"
+          }
+        },
+        {
+          "src": "var index = parseInt(map.index);\r\nvar index1=parseInt(index+1);\r\nmap.index=\"\"+index1;",
+          "inline": "true",
+          "type": "code-js",
+          "id": "PBXZ36BU6pmnR",
+          "next": {
+            "success": "PBXNTHURbP3sU",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "output",
+          "value": "fail select <#if request.params.field??> ${request.params.field} <#else> *  </#if> from `${request.path.tablename}`;",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXcrCWmLwPr4",
+          "next": {
+            "success": "PBXFeVQVngZkX",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "output",
+          "http_response_code": "503",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXFeVQVngZkX",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "failed",
+          "value": "to exectute",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXVfwDDVC5Zl",
+          "next": {
+            "success": "PBX1rSWVqFztZ",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "fail",
+          "value": "fail to check condition",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXR2S4bvq51a",
+          "next": {
+            "success": "PBXLicPzmkDec",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "failed",
+          "http_response_code": "400",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBX1rSWVqFztZ",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "fail",
+          "http_response_code": "0",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXLicPzmkDec",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "src": "var query=\"INSERT INTO  \"+map.output[map.index].name+\" (\"+map.output[map.index].columns+\") SELECT \"+map.output[map.index].fields+\",\"+map.domain_id +\" FROM \"+map.output[map.index].name+ \" where tenant_id = 0;\";\r\nprint(\"index IS INDEX\",map.index);\r\nprint(\"QUERY\",query);\r\nprint(\"tenant_id\",map.domain_id );\r\nmap.query=query;",
+          "inline": "true",
+          "type": "code-js",
+          "id": "PBXkm9XFK73Gx",
+          "next": {
+            "success": "PBXs8qLM1kUEm",
+            "failure": "PBXVfwDDVC5Zl"
+          }
+        },
+        {
+          "src": "var array=[];\r\nprint(\"output\",map.output);\r\nfor(var i=0;i<map.output.length;i++)\r\n{\r\narray.push(map.output[i].name);\r\n}\r\nprint(\"ARRAY\",array);\r\nmap.array=array;\r\nmap.length=array.length;\r\nprint(\"LENGTH\",map.length);",
+          "inline": "true",
+          "type": "code-js",
+          "id": "PBX9OTUiRcO3V",
+          "next": {
+            "success": "PBXhScZOQ2MQg",
+            "failure": "hangup"
+          }
+        },
+        {
+          "output_variable": "if_output_len",
+          "if_type": "value",
+          "variable1": "{{index}}",
+          "comparator": "equal_to",
+          "variable2": "{{length}}",
+          "value_type": "hb",
+          "type": "if-condition",
+          "id": "PBXNTHURbP3sU",
+          "next": {
+            "success": "PBX0aJXTXzvCT",
+            "failure": "PBXkm9XFK73Gx"
+          }
+        },
+        {
+          "name": "pass",
+          "value": "insertion done. success",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBX0aJXTXzvCT",
+          "next": {
+            "success": "PBXIvgJNCERaE",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "pass",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXIvgJNCERaE",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "result",
+          "value": "Fail to execute {{{query}}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXAJBwDWMRFf",
+          "next": {
+            "success": "PBX8M97S1pa2o",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "result",
+          "http_response_code": "500",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBX8M97S1pa2o",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "index",
+          "value": "0",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXhScZOQ2MQg",
+          "next": {
+            "success": "PBXNTHURbP3sU",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "{{session.tenant_id}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXpo89w65h5T",
+          "next": {
+            "success": "PBX9y6P5GzoIt",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29492,
+      "name": "version_insert",
+      "trigger": "rest",
+      "expression": "/version/{table_name}",
+      "method": "POST",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXPQEuFZKLXv"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "INSERT INTO `{{request.path.table_name}}` ({{app.id_type}},{{#each request.body}}{{@key}}{{#if @last}}{{else}},{{/if}}{{/each}}) VALUES({{domain_id}},{{#each request.body}}'{{{this}}}'{{#if @last}}{{else}},{{/if}}{{/each}})",
+          "value_type": "hb",
+          "output_variable": "version",
+          "type": "sql-insert",
+          "id": "PBXXm6hirX8qc",
+          "next": {
+            "success": "PBXZRLARPUXkR",
+            "failure": "PBXWF3qrDWzKf"
+          }
+        },
+        {
+          "output_variable": "c",
+          "if_type": "value",
+          "variable1": "{{version2}}",
+          "comparator": "greater_than_or_equals",
+          "variable2": "1",
+          "value_type": "hb",
+          "type": "if-condition",
+          "id": "PBX9lZWVO0W6M",
+          "next": {
+            "success": "PBXvG2fKcOhfe",
+            "failure": "PBXZEiVzm9Vwn"
+          }
+        },
+        {
+          "variable_name": "version1",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBX1KchRkxKe8",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "SELECT group_concat(column_name) as name\r\nFROM information_schema.columns\r\nWHERE table_name = '${request.path.table_name}' \r\nand (COLUMN_NAME<>'created_date' and COLUMN_NAME<>'created_time');",
+          "value_type": "ftl",
+          "output_variable": "a",
+          "type": "sql",
+          "id": "PBXvG2fKcOhfe",
+          "next": {
+            "success": "PBXmtp8rNXEt9",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "INSERT INTO `{{request.path.table_name}}_version` ({{request.path.table_name}}_{{output}})\r\nSELECT {{output}} from {{request.path.table_name}} where {{request.path.table_name}}.id={{version.GENERATED_KEY}}",
+          "value_type": "hb",
+          "output_variable": "version1",
+          "type": "sql-insert",
+          "id": "PBXwLfE0zEwqb",
+          "next": {
+            "success": "PBXBrgxXkTLXm",
+            "failure": "PBXUT4QSzOwhL"
+          }
+        },
+        {
+          "variable_name": "version1",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXE2AV5MlXZw",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "version1",
+          "value": "INSERT INTO `{{request.path.table_name}}_version` ({{a.}}) SELECT {{a}} from {{request.path.table_name}} where {{request.path.table_name}}.id={{version.GENERATED_KEY}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXUT4QSzOwhL",
+          "next": {
+            "success": "PBXE2AV5MlXZw",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "output",
+          "value": "{{a.0.name}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXmtp8rNXEt9",
+          "next": {
+            "success": "PBXwLfE0zEwqb",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "version1",
+          "value": "INSERT INTO `{{request.path.table_name}}` ({{app.id_type}},{{#each request.body}}{{@key}}{{#if @last}}{{else}},{{/if}}{{/each}}) VALUES({{domain_id}},{{#each request.body}}'{{{this}}}'{{#if @last}}{{else}},{{/if}}{{/each}})",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXWF3qrDWzKf",
+          "next": {
+            "success": "PBX1KchRkxKe8",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "version",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXZEiVzm9Vwn",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "version",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXBrgxXkTLXm",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "version2",
+          "value": "<#list app.version_tables?split(\",\") as table> <#if request.path.table_name==table>1</#if></#list>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXZRLARPUXkR",
+          "next": {
+            "success": "PBX9lZWVO0W6M",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "{{{session.tenant_id}}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXPQEuFZKLXv",
+          "next": {
+            "success": "PBXXm6hirX8qc",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29493,
+      "name": "version_bulk_insert",
+      "trigger": "rest",
+      "expression": "/bulk_version/{table_name}",
+      "method": "POST",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXxCIFQhvvHl"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "INSERT INTO ${request.path.table_name}(${app.id_type},created_by,<#assign c = request.body.data?first><#list c?keys as k><#if k?counter == c?size>${k}<#else>${k},</#if></#list>) VALUES\r\n<#list request.body.data as k1>(${domain_id},${request.body.created_by},<#list k1?values as v>\r\n<#if k1?counter == request.body.data?size><#if v?counter == k1?size>'${v}')<#else>'${v}',</#if><#elseif v?counter == k1?size>'${v}'), <#else>'${v}',</#if>\r\n</#list></#list>\r\n",
+          "value_type": "ftl",
+          "output_variable": "version",
+          "type": "sql-insert",
+          "id": "PBXXm6hirX8qc",
+          "next": {
+            "success": "PBXmMiKpZtkHW",
+            "failure": "PBXEwChK6GJbC"
+          }
+        },
+        {
+          "output_variable": "c",
+          "if_type": "value",
+          "variable1": "{{version2}}",
+          "comparator": "greater_than_or_equals",
+          "variable2": "1",
+          "value_type": "hb",
+          "type": "if-condition",
+          "id": "PBX9lZWVO0W6M",
+          "next": {
+            "success": "PBXC2XTIcOszy",
+            "failure": "PBXziHDN14x16"
+          }
+        },
+        {
+          "variable_name": "version1",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBX1KchRkxKe8",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "SELECT group_concat(column_name) as name\r\nFROM information_schema.columns\r\nWHERE table_name = '{{request.path.table_name}}' \r\nand (COLUMN_NAME<>'created_date' and COLUMN_NAME<>'created_time');\r\n",
+          "value_type": "hb",
+          "output_variable": "a",
+          "type": "sql",
+          "id": "PBXvG2fKcOhfe",
+          "next": {
+            "success": "PBXhgK5bA7qiS",
+            "failure": "PBXmtp8rNXEt9"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "INSERT INTO `${request.path.table_name}_version` (${request.path.table_name}_${b}) SELECT ${b} from ${request.path.table_name} where id in(SELECT a.id FROM ${request.path.table_name} t join (select id from ${request.path.table_name} t1 where created_by =${request.body.created_by} order by id desc limit  ${request.body.data?size})a group by a.id)\r\n\r\n",
+          "value_type": "ftl",
+          "output_variable": "version1",
+          "type": "sql-insert",
+          "id": "PBXwLfE0zEwqb",
+          "next": {
+            "success": "PBXIi7TreQUfk",
+            "failure": "PBXUT4QSzOwhL"
+          }
+        },
+        {
+          "variable_name": "version1",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXE2AV5MlXZw",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "version",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXIi7TreQUfk",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "version1",
+          "value": "INSERT INTO `${request.path.table_name}_version` (${request.path.table_name}_${b}) SELECT ${b} from ${request.path.table_name} where id in(SELECT a.id FROM ${request.path.table_name} t join (select id from ${request.path.table_name} t1 where created_by =${request.body.created_by} order by id desc limit  ${request.body.data?size})a group by a.id)",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXUT4QSzOwhL",
+          "next": {
+            "success": "PBXE2AV5MlXZw",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "output1",
+          "value": "select failed",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXmtp8rNXEt9",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "version1",
+          "value": "INSERT INTO ${request.path.table_name}(${app.id_type},created_by,<#assign c = request.body.data?first><#list c?keys as k><#if k?counter == c?size>${k}<#else>${k},</#if></#list>) VALUES <#list request.body.data as k1>(${domain_id},${request.body.created_by},<#list k1?values as v> <#if k1?counter == request.body.data?size><#if v?counter == k1?size>'${v}')<#else>'${v}',</#if><#elseif v?counter == k1?size>'${v}'), <#else>'${v}',</#if> </#list></#list>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXEwChK6GJbC",
+          "next": {
+            "success": "PBX1KchRkxKe8",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "version",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXziHDN14x16",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "b",
+          "value": "{{a.0.name}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXhgK5bA7qiS",
+          "next": {
+            "success": "PBXwLfE0zEwqb",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "res",
+          "value": "${version.GENERATED_KEY}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXC2XTIcOszy",
+          "next": {
+            "success": "PBXvG2fKcOhfe",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "version2",
+          "value": "<#list app.version_tables?split(\",\") as table> <#if request.path.table_name==table>1</#if></#list>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXmMiKpZtkHW",
+          "next": {
+            "success": "PBX9lZWVO0W6M",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXxCIFQhvvHl",
+          "next": {
+            "success": "PBXXm6hirX8qc",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29495,
+      "name": "version_update",
+      "trigger": "rest",
+      "expression": "/version/{table_name}",
+      "method": "PUT",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXmPobk6seEm"
+          }
+        },
+        {
+          "output_variable": "c",
+          "if_type": "value",
+          "variable1": "{{version2}}",
+          "comparator": "greater_than_or_equals",
+          "variable2": "1",
+          "value_type": "hb",
+          "type": "if-condition",
+          "id": "PBX9lZWVO0W6M",
+          "next": {
+            "success": "PBXvG2fKcOhfe",
+            "failure": "PBXZEiVzm9Vwn"
+          }
+        },
+        {
+          "variable_name": "version1",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBX1KchRkxKe8",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "SELECT group_concat(column_name) as name\r\nFROM information_schema.columns\r\nWHERE table_name = '${request.path.table_name}' \r\nand (COLUMN_NAME<>'created_date' and COLUMN_NAME<>'created_time');",
+          "value_type": "ftl",
+          "output_variable": "a",
+          "type": "sql",
+          "id": "PBXvG2fKcOhfe",
+          "next": {
+            "success": "PBXmtp8rNXEt9",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "INSERT INTO `{{request.path.table_name}}_version` ({{request.path.table_name}}_{{output}})\r\nSELECT {{output}} from {{request.path.table_name}} where {{request.path.table_name}}.id='{{request.body.id}}'",
+          "value_type": "hb",
+          "output_variable": "version1",
+          "type": "sql-insert",
+          "id": "PBXwLfE0zEwqb",
+          "next": {
+            "success": "PBXBrgxXkTLXm",
+            "failure": "PBXUT4QSzOwhL"
+          }
+        },
+        {
+          "variable_name": "version1",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXE2AV5MlXZw",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "version1",
+          "value": "INSERT INTO `{{request.path.table_name}}_version` ({{a.}}) SELECT {{a}} from {{request.path.table_name}} where {{request.path.table_name}}.id={{version.GENERATED_KEY}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXUT4QSzOwhL",
+          "next": {
+            "success": "PBXE2AV5MlXZw",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "output",
+          "value": "{{a.0.name}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXmtp8rNXEt9",
+          "next": {
+            "success": "PBXwLfE0zEwqb",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "version1",
+          "value": "UPDATE `{{request.path.table_name}}` SET  {{#each request.body}} {{#if @first}} {{@key}}= '{{{escapequote this}}}'{{/if}}{{/each}} WHERE id='{{request.body.id}}' and {{app.id_type}}={{domain_id}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXWF3qrDWzKf",
+          "next": {
+            "success": "PBX1KchRkxKe8",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "version",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXZEiVzm9Vwn",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "version",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXBrgxXkTLXm",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "UPDATE `{{request.path.table_name}}` SET \r\n{{#each request.body}}\r\n{{#if @first}} {{@key}}= '{{{escapequote this}}}'{{/if}}{{/each}}\r\nWHERE id='{{request.body.id}}' and {{app.id_type}}={{domain_id}}",
+          "value_type": "hb",
+          "output_variable": "version",
+          "type": "sql-update",
+          "id": "PBX97uwqKoFDL",
+          "next": {
+            "success": "PBXQyMwKZUGhg",
+            "failure": "PBXWF3qrDWzKf"
+          }
+        },
+        {
+          "name": "version2",
+          "value": "<#list app.version_tables?split(\",\") as table> <#if request.path.table_name==table>1</#if></#list>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXQyMwKZUGhg",
+          "next": {
+            "success": "PBX9lZWVO0W6M",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "{{{session.tenant_id}}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXmPobk6seEm",
+          "next": {
+            "success": "PBX97uwqKoFDL",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29494,
+      "name": "version_bulk_update",
+      "trigger": "rest",
+      "expression": "/bulk_version/{table_name}",
+      "method": "PUT",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXuV4iBtzgTN"
+          }
+        },
+        {
+          "output_variable": "c",
+          "if_type": "value",
+          "variable1": "{{version2}}",
+          "comparator": "greater_than_or_equals",
+          "variable2": "1",
+          "value_type": "hb",
+          "type": "if-condition",
+          "id": "PBX9lZWVO0W6M",
+          "next": {
+            "success": "PBXvG2fKcOhfe",
+            "failure": "PBXZEiVzm9Vwn"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select count(id) as count from config where tables='${request.path.table_name}'",
+          "value_type": "ftl",
+          "output_variable": "output",
+          "type": "sql-one",
+          "id": "PBXTER1laD6Ll",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "version1",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBX1KchRkxKe8",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "SELECT group_concat(column_name) as name\r\nFROM information_schema.columns\r\nWHERE table_name = '${request.path.table_name}' \r\nand (COLUMN_NAME<>'created_date' and COLUMN_NAME<>'created_time');",
+          "value_type": "ftl",
+          "output_variable": "a",
+          "type": "sql",
+          "id": "PBXvG2fKcOhfe",
+          "next": {
+            "success": "PBXmtp8rNXEt9",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "insert into ${request.path.table_name}_version\r\n(${request.path.table_name}_${output})\r\nselect ${output} from ${request.path.table_name} where ${request.path.table_name}.id in( ${request.body.id}) ",
+          "value_type": "ftl",
+          "output_variable": "version1",
+          "type": "sql-insert",
+          "id": "PBXwLfE0zEwqb",
+          "next": {
+            "success": "PBXBrgxXkTLXm",
+            "failure": "PBXUT4QSzOwhL"
+          }
+        },
+        {
+          "variable_name": "version1",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "hb",
+          "type": "send",
+          "id": "PBXE2AV5MlXZw",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "version1",
+          "value": "insert into ${request.path.table_name}_version (${request.path.table_name}_${output}) select ${output} from ${request.path.table_name} where ${request.path.table_name}.id in( ${request.body.id}) ",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXUT4QSzOwhL",
+          "next": {
+            "success": "PBXE2AV5MlXZw",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "output",
+          "value": "{{a.0.name}}",
+          "value_type": "hb",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXmtp8rNXEt9",
+          "next": {
+            "success": "PBXwLfE0zEwqb",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "version1",
+          "value": "UPDATE ${request.path.table_name}  SET <#list request.body?keys as k><#if k!=\"id\">${k}</#if></#list>=<#list request.body as key,value><#if key!=\"id\">'${value}'</#if></#list> where id in(<#list request.body as key, value><#if key==\"id\">${value}</#if></#list>) and ${app.id_type}=${domain_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXWF3qrDWzKf",
+          "next": {
+            "success": "PBX1KchRkxKe8",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "version",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXZEiVzm9Vwn",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "version",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXBrgxXkTLXm",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "UPDATE ${request.path.table_name} \r\nSET <#list request.body?keys as k><#if k!=\"id\">${k}</#if></#list>=<#list request.body as key,value><#if key!=\"id\">'${value}'</#if></#list>\r\nwhere id in(<#list request.body as key, value><#if key==\"id\">${value}</#if></#list>) and ${app.id_type}=${domain_id}",
+          "value_type": "ftl",
+          "output_variable": "version",
+          "type": "sql-update",
+          "id": "PBX97uwqKoFDL",
+          "next": {
+            "success": "PBXcrzveOeMmy",
+            "failure": "PBXWF3qrDWzKf"
+          }
+        },
+        {
+          "name": "version2",
+          "value": "<#list app.version_tables?split(\",\") as table> <#if request.path.table_name==table>1</#if></#list>",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXcrzveOeMmy",
+          "next": {
+            "success": "PBX9lZWVO0W6M",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXuV4iBtzgTN",
+          "next": {
+            "success": "PBX97uwqKoFDL",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29491,
+      "name": "version_select",
+      "trigger": "rest",
+      "expression": "/version/{table_name}/{id}",
+      "method": "GET",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBXk4GhknX5Vl"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "select <#if request.params.fields??> ${request.params.fields} <#else> *  </#if> from ${request.path.table_name}_version \r\n where ${request.path.table_name}_version.${app.id_type}=${domain_id} and ${request.path.table_name}_id=${request.path.id}  order by created_time desc limit 1",
+          "value_type": "ftl",
+          "output_variable": "select",
+          "type": "sql",
+          "id": "PBXil8Tzp8pCK",
+          "next": {
+            "success": "PBXpkE42lBscB",
+            "failure": "PBXvwF72enkwc"
+          }
+        },
+        {
+          "name": "select",
+          "value": "select <#if request.params.fields??> ${request.params.fields} <#else> *  </#if> from ${request.path.table_name}_version   where ${request.path.table_name}_version.${app.id_type}=${domain_id} and ${request.path.table_name}_id=${request.path.id}  order by created_time desc limit 1",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXvwF72enkwc",
+          "next": {
+            "success": "PBXcM8WhM1oZ5",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "select",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXpkE42lBscB",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "select",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXcM8WhM1oZ5",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "domain_id",
+          "value": "${session.tenant_id}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBXk4GhknX5Vl",
+          "next": {
+            "success": "PBXil8Tzp8pCK",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": 29496,
+      "name": "desc",
+      "trigger": "rest",
+      "expression": "desc/{table_name}",
+      "method": "GET",
+      "steps": [
+        {
+          "type": "start",
+          "id": 1,
+          "next": {
+            "start": "PBX2TguTAMw7H"
+          }
+        },
+        {
+          "plugin_name": "app_db",
+          "value": "desc ${request.path.table_name}",
+          "value_type": "ftl",
+          "output_variable": "desc",
+          "type": "sql",
+          "id": "PBX2TguTAMw7H",
+          "next": {
+            "success": "PBXJ0psXyhWLu",
+            "failure": "PBX8hciBgRguE"
+          }
+        },
+        {
+          "variable_name": "desc",
+          "http_response_code": "200",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXJ0psXyhWLu",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        },
+        {
+          "name": "desc",
+          "value": "desc ${request.path.table_name}",
+          "value_type": "ftl",
+          "encode_or_decode": "DO_NOTHING",
+          "char_set": "ISO-8859-1",
+          "type": "set-var",
+          "id": "PBX8hciBgRguE",
+          "next": {
+            "success": "PBXAUt4QzMrLA",
+            "failure": "hangup"
+          }
+        },
+        {
+          "variable_name": "desc",
+          "http_response_code": "401",
+          "response_content_type": "application/json",
+          "value_type": "ftl",
+          "type": "send",
+          "id": "PBXAUt4QzMrLA",
+          "next": {
+            "success": "hangup",
+            "failure": "hangup"
+          }
+        }
+      ]
+    },
+    {
+      "id": "default-health",
+      "trigger": "rest",
+      "expression": "/_appup/_version",
+      "method": "get",
+      "steps": [
+        {
+          "id": "1",
+          "type": "get-env-data",
+          "action": "env",
+          "variable": [
+            "VERSION",
+            "CLOUD_ID",
+            "SVC_NAME",
+            "IMAGE_TAG"
+          ],
+          "next": {
+            "success": "prepareResponse"
+          }
+        },
+        {
+          "id": "prepareResponse",
+          "type": "set-var-multi",
+          "json_is": true,
+          "json_name": "deployInfo",
+          "variables": [
+            {
+              "key": "APP_NAME",
+              "value": "{{SVC_NAME}}"
+            },
+            {
+              "key": "CLOUD_ID",
+              "value": "{{CLOUD_ID}}"
+            },
+            {
+              "key": "VERSION",
+              "value": "{{VERSION}}"
+            },
+            {
+              "key": "DI_TAG",
+              "value": "{{IMAGE_TAG}}"
+            }
+          ],
+          "next": {
+            "success": "send"
+          }
+        },
+        {
+          "id": "send",
+          "type": "send",
+          "variable_name": "deployInfo",
+          "http_response_code": "200",
+          "value_type": "hb"
+        }
+      ]
+    }
+  ],
+  "server": {
+    "port": "8080",
+    "host": "0.0.0.0",
+    "idle_timeout": 12000,
+    "set_time_response": true,
+    "set_options": true,
+    "options_route_expression": "/*",
+    "options_allowed_origins": "*",
+    "options_allowed_methods": "GET,PUT,POST,DELETE,OPTIONS",
+    "options_allowed_headers": "Content-Type, Authorization, Content-Length, X-Requested-With",
+    "static_route_expression": "/"
+  },
+  "properties": {
+    "cloud": {},
+    "app": {
+      "id_type": "OWNER_ID"
+    }
+  },
+  "plugins": [
+    {
+      "id": "1_user_db",
+      "type": "mysql-plugin",
+      "server": "qa-appupdb.c2xawm3kje6l.us-west-2.rds.amazonaws.com",
+      "username": "appup",
+      "password": "appup!^234",
+      "schema": "applet_user",
+      "name": "user_db",
+      "version": "1.0"
+    },
+    {
+      "id": "9",
+      "type": "jwt-plugin",
+      "signKey": "z0NN9huvOKW8Me8QSrREaG9BP4_7oG1PaKbs6wYlysY",
+      "name": "jwt-plugin",
+      "version": "1.0"
+    },
+    {
+      "id": "11",
+      "type": "mysql-plugin",
+      "server": "qa-appupdb.c2xawm3kje6l.us-west-2.rds.amazonaws.com",
+      "username": "appup",
+      "password": "appup!^234",
+      "schema": "applet_app",
+      "name": "app_db",
+      "version": "1.0"
+    }
+  ],
+  "filters": [
+    {
+      "id": "filter_1",
+      "name": "authFilter",
+      "type": [
+        "pre-filter"
+      ],
+      "expression": [
+        "/_db/*",
+        "/conflict_check/{table_name}/{id}/{field_type}/{value}/*",
+        "/bulk/*"
+      ],
+      "steps": [
+        {
+          "id": "1",
+          "type": "jwt-validate",
+          "name": "token",
+          "sourceExpression": [
+            {
+              "key": "headerKey",
+              "value": "{{{request.headers.Appup-Auth-token}}}"
+            },
+            {
+              "key": "headerKey",
+              "value": "{{{request.headers.token}}}"
+            },
+            {
+              "key": "cookie",
+              "value": "{{{request.cookies.token.value}}}"
+            }
+          ],
+          "value_type": "hb",
+          "plugin_name": "jwt-plugin",
+          "output_variable": "session",
+          "next": {
+            "success": "checkCookieExpiration",
+            "failure": "setUnAuthorized"
+          }
+        },
+        {
+          "id": "checkCookieExpiration",
+          "type": "code-js",
+          "src": "var current = new Date();if(current.toUTCString() < map.session.expiry_time){map.put(\"expiry\",1)}else{map.put(\"expiry\",0)};",
+          "inline": true,
+          "returnOutputVariable": false,
+          "next": {
+            "success": "checkCondition"
+          }
+        },
+        {
+          "id": "checkCondition",
+          "type": "if-condition",
+          "variable1": "{{expiry}}",
+          "comparator": "equal_to",
+          "variable2": "1",
+          "if_type": "value",
+          "value_type": "hb",
+          "output_variable": "condition_output",
+          "next": {
+            "success": "getowner_id",
+            "failure": "setUnAuthorized"
+          }
+        },
+        {
+          "id": "getowner_id",
+          "type": "sql",
+          "plugin_name": "user_db",
+          "value_type": "hb",
+          "value": "SELECT OWNER_ID from COLLABORATORS WHERE DEVELOPER_ID = '{{session.user_id}}'",
+          "output_variable": "owner_record",
+          "next": {
+            "success": "setowners"
+          }
+        },
+        {
+          "id": "setowners",
+          "type": "set-var",
+          "name": "owners",
+          "value_type": "ftl",
+          "value": "<#list owner_record as i><#if i.OWNER_ID??>${i.OWNER_ID}</#if> <#sep>,</#list>",
+          "next": {
+            "success": "owner_id"
+          }
+        },
+        {
+          "id": "owner_id",
+          "type": "code-js",
+          "src": "if (map.request.path.containsKey('table_name')) {var isTableNameExcluded = {'PLUGINS': true, 'publish_info_new': true,'publish_info_steps': true,'publish_sns_request': true, 'WORKFLOW_TEMPLATE': true, 'UI_PLUGIN':true};if (!isTableNameExcluded[map.request.path.table_name]) {if (!map.request.params.containsKey('where')) {map.request.params.put('where', map.request.path.table_name+'.OWNER_ID in (' + map.owners+ ')');} else {var temp = map.request.params.get('where');temp = temp +' AND '+map.request.path.table_name+'.OWNER_ID in (' + map.owners + ')';map.request.params.put('where', temp);}}}",
+          "inline": "true"
+        },
+        {
+          "id": "setUnAuthorized",
+          "type": "set-var-multi",
+          "json_is": true,
+          "json_name": "error_response",
+          "variables": [
+            {
+              "key": "status",
+              "value": "Unauthorized: Please login again. Your session may have timed out."
+            },
+            {
+              "key": "code",
+              "value": "401"
+            }
+          ],
+          "next": {
+            "success": "send"
+          }
+        },
+        {
+          "id": "send",
+          "type": "send",
+          "variable_name": "error_response",
+          "http_response_code": "401"
+        }
+      ]
+    }
+  ]
+}

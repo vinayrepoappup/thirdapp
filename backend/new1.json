@@ -1,0 +1,1 @@
+{ "name": "formatJson", "value": "{{{jsonstr request.body}}}", "value_type": "hb", "encode_or_decode": "DO_NOTHING", "char_set": "ISO-8859-1", "type": "set-var", "id": "PBXxhaRkRF0Cu", "next": { "success": "PBXkTgleSTNfG", "failure": "PBXG7cXQrmk3s" } }
